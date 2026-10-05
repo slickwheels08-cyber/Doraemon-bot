@@ -11,12 +11,12 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. Discord Client Initialization
+// 3. Discord Client Initialization (FIXED INTENTS BITFIELD)
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+         GatewayIntentBits.MessageContent // This MUST match the developer portal toggle!
     ]
 });
 
@@ -99,7 +99,7 @@ client.on('messageCreate', async (message) => {
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
-        return message.reply(`👓🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
+        return message.reply(`眼镜🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
     }
 
     // --- COMMAND: !mouse ---
@@ -137,7 +137,9 @@ client.on('messageCreate', async (message) => {
 
     // --- FEATURE: AI Chatbot Feature ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
+        console.log("Chatbot mention detected from user:", username);
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
+        
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
