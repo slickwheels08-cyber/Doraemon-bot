@@ -144,14 +144,15 @@ client.on('messageCreate', async (message) => {
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // New standardized content generation method from @google/genai SDK
+                        // Updated model configuration pathing structure for the generative-ai client
             const response = await ai.models.generateContent({
-                model: 'gemini-3.8-flash',
+                model: 'gemini-2.5-flash',
                 contents: userPrompt,
                 config: {
-                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Use emojis like 🎒, 🤖, 🥞, and 🚪. Keep your answers brief, punchy, conversational, and accessible. Never break character."
+                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character."
                 }
             });
+
 
             return message.reply(response.text);
         } catch (error) {
