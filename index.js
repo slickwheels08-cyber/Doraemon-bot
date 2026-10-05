@@ -7,9 +7,10 @@ const app = express();
 app.get('/', (req, res) => res.send('Doraemon is awake and eating Dorayaki!'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
 
-// 2. In-Memory Database and Tracking Maps
+// 2. In-Memory Databases, Cooldowns, and Chat History Tracking Maps
 const dorayakiDb = {}; 
 const cooldowns = new Set();
+const chatHistoryDb = {}; // Stores multi-turn active conversation memory for each user
 
 // 3. Official Unified Google Gen AI Client Setup
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -50,8 +51,18 @@ client.on('messageCreate', async (message) => {
                 `• \`!dorayaki\` — Feed me a snack to earn points! (15s Cooldown)\n` +
                 `• \`!dorayaki-board\` — View the global high-score leaderboard.\n\n` +
                 `Chat With Me\n` +
-                `• Simply mention/tag me in a message like \`@Doraemon\` to start a conversation!`);
+                `• Simply mention/tag me in a message like \`@Doraemon\` to start a conversation!\n` +
+                `• Use \`!clear-pocket\` to completely reset my conversation memory with you.`);
         return message.reply({ embeds: [helpEmbed] });
+    }
+
+    // --- COMMAND: !clear-pocket ---
+    if (message.content === '!clear-pocket') {
+        if (chatHistoryDb[userId]) {
+            delete chatHistoryDb[userId];
+            return message.reply('*Doraemon lets out a sigh of relief...* "Phew! I cleared out my memory logs for our chat. Let\'s start fresh, friend!"');
+        }
+        return message.reply('"Huh? We haven\'t even started chatting yet, so my memory is already clear!"');
     }
 
     // --- COMMAND: !gadget ---
@@ -138,48 +149,64 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature with 3.5 Fallback ---
+    // --- FEATURE: AI Chatbot Feature with Active Memory History & 3.5 Fallback ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         const systemInstructions = "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character.";
 
+        // Initialize session array history for the user if it doesn't exist yet
+        if (!chatHistoryDb[userId]) {
+            chatHistoryDb[userId] = [];
+        }
+
+        // Append the new message payload matching Google GenAI's content object schema
+        chatHistoryDb[userId].push({ role: 'user', parts: [{ text: userPrompt }] });
+
+        // Maintain a sliding window history limit (keep last 12 messages max to avoid over-tokenization)
+        if (chatHistoryDb[userId].length > 12) {
+            chatHistoryDb[userId].shift();
+        }
+
         try {
-            // Primary Attempt: Use the latest model
+            // Primary Attempt: Pass full contents history array to gemini-3.8-flash
             const response = await ai.models.generateContent({
                 model: 'gemini-3.8-flash',
-                contents: userPrompt,
+                contents: chatHistoryDb[userId], 
                 config: { systemInstruction: systemInstructions }
             });
 
             if (response && response.text) {
+                // Log bot's answer into the user's local history map array
+                chatHistoryDb[userId].push({ role: 'model', parts: [{ text: response.text }] });
                 return message.reply(response.text);
             } else {
                 throw new Error("Text missing from primary response wrapper.");
             }
         } catch (error) {
-            console.warn(`Primary model gemini-3.8-flash failed: ${error.message}. Initializing fallback...`);
+            console.warn(`Primary model gemini-3.8-flash failed: ${error.message}. Initializing fallback conversation...`);
 
             try {
-                // Secondary Fallback Attempt: Execute gemini-3.5-flash-lite immediately
+                // Secondary Fallback Attempt: Retain history context array inside gemini-3.5-flash-lite
                 const fallbackResponse = await ai.models.generateContent({
                     model: 'gemini-3.5-flash-lite',
-                    contents: userPrompt,
+                    contents: chatHistoryDb[userId],
                     config: { systemInstruction: systemInstructions }
                 });
-
                 if (fallbackResponse && fallbackResponse.text) {
-                    return message.reply(fallbackResponse.text);
-                } else {
-                    throw new Error("Text missing from fallback response wrapper.");
-                }
-            } catch (fallbackError) {
-                console.error("ALL GEMINI API ENDPOINTS EXHAUSTED:", fallbackError.message);
-                return message.reply('*Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
-            }
-        }
-    }
+chatHistoryDb[userId].push({ role: 'model', parts: [{ text: fallbackResponse.text }] });
+return message.reply(fallbackResponse.text);
+} else {
+throw new Error("Text missing from fallback response wrapper.");
+}
+} catch (fallbackError) {
+console.error("ALL GEMINI API ENDPOINTS EXHAUSTED:", fallbackError.message);
+// Remove the last user prompt from history since it failed execution
+chatHistoryDb[userId].pop();
+return message.reply('Doraemon scratches his head... "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
+}
+}
+}
 });
-
 client.login(process.env.DISCORD_TOKEN);
