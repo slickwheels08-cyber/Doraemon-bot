@@ -101,7 +101,6 @@ client.on('messageCreate', async (message) => {
             'I accidentally tripped in front of Shizuka!',
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
-        // FIXED: Changed Math.trouble to Math.random
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
         return message.reply(`*Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!"`);
     }
@@ -139,32 +138,48 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature ---
+    // --- FEATURE: AI Chatbot Feature with 1.5 Fallback ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
+        const systemInstructions = "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character.";
+
         try {
+            // Primary Attempt: Use the latest model
             const response = await ai.models.generateContent({
-                // FIXED: Updated identifier string to a supported model
                 model: 'gemini-3.8-flash',
                 contents: userPrompt,
-                config: {
-                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character."
-                }
+                config: { systemInstruction: systemInstructions }
             });
 
             if (response && response.text) {
                 return message.reply(response.text);
             } else {
-                throw new Error("Text missing from response content wrapper.");
+                throw new Error("Text missing from primary response wrapper.");
             }
         } catch (error) {
-            console.error("GEMINI API ERROR DETAILS:", error.message);
-            return message.reply('*Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
+            console.warn(`Primary model gemini-3.8-flash failed: ${error.message}. Initializing fallback...`);
+
+            try {
+                // Secondary Fallback Attempt: Execute 1.5-flash immediately
+                const fallbackResponse = await ai.models.generateContent({
+                    model: 'gemini-1.5-flash',
+                    contents: userPrompt,
+                    config: { systemInstruction: systemInstructions }
+                });
+
+                if (fallbackResponse && fallbackResponse.text) {
+                    return message.reply(fallbackResponse.text);
+                } else {
+                    throw new Error("Text missing from fallback response wrapper.");
+                }
+            } catch (fallbackError) {
+                console.error("ALL GEMINI API ENDPOINTS EXHAUSTED:", fallbackError.message);
+                return message.reply('*Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
+            }
         }
     }
 });
 
-// FIXED: Added missing closing parenthesis and semicolon
 client.login(process.env.DISCORD_TOKEN);
