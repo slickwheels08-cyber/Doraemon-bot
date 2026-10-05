@@ -147,7 +147,7 @@ client.on('messageCreate', async (message) => {
         try {
             const response = await ai.models.generateContent({
                 // FIXED: Updated identifier string to a supported model
-                model: 'gemini-1.5-flash',
+                model: 'gemini-3.8-flash',
                 contents: userPrompt,
                 config: {
                     systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character."
