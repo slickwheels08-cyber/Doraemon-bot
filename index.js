@@ -11,12 +11,12 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. Discord Client Initialization (FIXED INTENTS BITFIELD)
+// 3. Discord Client Initialization
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
-         GatewayIntentBits.MessageContent // This MUST match the developer portal toggle!
+        GatewayIntentBits.MessageContent 
     ]
 });
 
@@ -99,7 +99,7 @@ client.on('messageCreate', async (message) => {
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
-        return message.reply(`眼镜🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
+        return message.reply(`👓🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
     }
 
     // --- COMMAND: !mouse ---
@@ -142,7 +142,7 @@ client.on('messageCreate', async (message) => {
 
         try {
             const aiResponse = await axios.post('https://groq.com', {
-                model: "llama3-8b-8192",
+                model: "llama-3.1-8b-instant", // Updated model name for faster processing
                 messages: [
                     {
                         role: "system",
@@ -157,14 +157,17 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
-            // ADD THE MISSING [0] INDEX TRACKER TO RESOLVE THE ARRAY BLOCK
+            // Added choice index array path extraction fix
             const replyMessage = aiResponse.data.choices[0].message.content;
             return message.reply(replyMessage);
         } catch (error) {
+            // Enhanced descriptive logging tracking setup
             if (error.response) {
                 console.error("GROQ API CRASH DETAILS:", JSON.stringify(error.response.data));
+            } else if (error.request) {
+                console.error("GROQ NETWORK TIMEOUT: Outgoing connection block or timeout from host server stack.");
             } else {
-                console.error("NETWORK ERROR:", error.message);
+                console.error("SCRIPT EXECUTION ERROR:", error.message);
             }
             return message.reply('🤖 *Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
         }
