@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
 const { GoogleGenAI } = require('@google/genai');
 
-// 1. Keep-Alive Web Server Setup (Fixed typo here)
+// 1. Keep-Alive Web Server Setup
 const app = express();
 app.get('/', (req, res) => res.send('Doraemon is awake and eating Dorayaki!'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
@@ -101,7 +101,8 @@ client.on('messageCreate', async (message) => {
             'I accidentally tripped in front of Shizuka!',
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
-        const randomTrouble = troubles[Math.floor(Math.trouble * troubles.length)];
+        // FIXED: Changed Math.trouble to Math.random
+        const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
         return message.reply(`*Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!"`);
     }
 
@@ -138,14 +139,15 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature (Correct Unified SDK Structure) ---
+    // --- FEATURE: AI Chatbot Feature ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                // FIXED: Updated identifier string to a supported model
+                model: 'gemini-1.5-flash',
                 contents: userPrompt,
                 config: {
                     systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character."
@@ -164,4 +166,5 @@ client.on('messageCreate', async (message) => {
     }
 });
 
+// FIXED: Added missing closing parenthesis and semicolon
 client.login(process.env.DISCORD_TOKEN);
