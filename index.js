@@ -138,7 +138,7 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature with 1.5 Fallback ---
+    // --- FEATURE: AI Chatbot Feature with 3.5 Fallback ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
@@ -162,9 +162,9 @@ client.on('messageCreate', async (message) => {
             console.warn(`Primary model gemini-3.8-flash failed: ${error.message}. Initializing fallback...`);
 
             try {
-                // Secondary Fallback Attempt: Execute 1.5-flash immediately
+                // Secondary Fallback Attempt: Execute gemini-3.5-flash-lite immediately
                 const fallbackResponse = await ai.models.generateContent({
-                    model: 'gemini-1.5-flash',
+                    model: 'gemini-3.5-flash-lite',
                     contents: userPrompt,
                     config: { systemInstruction: systemInstructions }
                 });
