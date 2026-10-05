@@ -1,9 +1,8 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
-// FIXED: Require the entire class directly without curly braces
-const GoogleGenAI = require('@google/genai');
+const { GoogleGenAI } = require('@google/genai');
 
-// 1. Keep-Alive Web Server Setup
+// 1. Keep-Alive Web Server Setup (Fixed typo here)
 const app = express();
 app.get('/', (req, res) => res.send('Doraemon is awake and eating Dorayaki!'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
@@ -12,7 +11,7 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. Initialize the Google Gen AI Client Class Correctly
+// 3. Official Unified Google Gen AI Client Setup
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // 4. Discord Client Initialization
@@ -102,7 +101,7 @@ client.on('messageCreate', async (message) => {
             'I accidentally tripped in front of Shizuka!',
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
-        const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
+        const randomTrouble = troubles[Math.floor(Math.trouble * troubles.length)];
         return message.reply(`*Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!"`);
     }
 
@@ -139,13 +138,12 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature ---
+    // --- FEATURE: AI Chatbot Feature (Correct Unified SDK Structure) ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // FIXED CONFIG: Pass systemInstruction correctly inside the model options object
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: userPrompt,
@@ -157,7 +155,7 @@ client.on('messageCreate', async (message) => {
             if (response && response.text) {
                 return message.reply(response.text);
             } else {
-                throw new Error("Text property missing from the GenAI response payload.");
+                throw new Error("Text missing from response content wrapper.");
             }
         } catch (error) {
             console.error("GEMINI API ERROR DETAILS:", error.message);
