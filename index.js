@@ -137,11 +137,10 @@ client.on('messageCreate', async (message) => {
 
     // --- FEATURE: AI Chatbot Feature ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
-        const userPrompt = message.content.replace(`<@${client.user.id}>`, '').trim();
+        let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // FIXED BASE URL ENDPOINT PATH
             const aiResponse = await axios.post('https://groq.com', {
                 model: "llama3-8b-8192",
                 messages: [
@@ -158,11 +157,14 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
-            // FIXED DATA RESPONSE PATH ARRAYS FOR GROQ SPECIFICATION
             const replyMessage = aiResponse.data.choices[0].message.content;
             return message.reply(replyMessage);
         } catch (error) {
-            console.error("Chatbot Error:", error.response ? error.response.data : error.message);
+            if (error.response) {
+                console.error("GROQ API CRASH DETAILS:", JSON.stringify(error.response.data));
+            } else {
+                console.error("NETWORK ERROR:", error.message);
+            }
             return message.reply('🤖 *Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
         }
     }
