@@ -99,7 +99,7 @@ client.on('messageCreate', async (message) => {
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
-        return message.reply(`👓🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
+        return message.reply(`眼镜🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
     }
 
     // --- COMMAND: !mouse ---
@@ -123,7 +123,7 @@ client.on('messageCreate', async (message) => {
     // --- COMMAND: !dorayaki-board ---
     if (message.content === '!dorayaki-board') {
         const sorted = Object.entries(dorayakiDb)
-            .sort((a, b) => b[1] - a[1])
+            .sort((a, b) => b - a)
             .slice(0, 10);
 
         let boardText = sorted.map(([id, val], i) => `${i + 1}. <@${id}> — ${val} 🥞`).join('\n') || "No one has fed me yet! 🥞";
@@ -141,7 +141,8 @@ client.on('messageCreate', async (message) => {
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            const aiResponse = await axios.post('https://groq.com', {
+            // FIXED BASE URL ENDPOINT PATH
+            const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
                 model: "llama3-8b-8192",
                 messages: [
                     {
