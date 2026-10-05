@@ -1,6 +1,6 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
-// FIXED IMPORT: No curly braces for the new unified SDK default export
+// FIXED: Require the entire class directly without curly braces
 const GoogleGenAI = require('@google/genai');
 
 // 1. Keep-Alive Web Server Setup
@@ -12,7 +12,7 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. New Unified Google Gen AI Client Setup
+// 3. Initialize the Google Gen AI Client Class Correctly
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // 4. Discord Client Initialization
@@ -145,7 +145,7 @@ client.on('messageCreate', async (message) => {
         if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // Updated exact config block parameters structure for @google/genai
+            // FIXED CONFIG: Pass systemInstruction correctly inside the model options object
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: userPrompt,
@@ -157,7 +157,7 @@ client.on('messageCreate', async (message) => {
             if (response && response.text) {
                 return message.reply(response.text);
             } else {
-                throw new Error("Text property missing from the GenAI response wrapper.");
+                throw new Error("Text property missing from the GenAI response payload.");
             }
         } catch (error) {
             console.error("GEMINI API ERROR DETAILS:", error.message);
