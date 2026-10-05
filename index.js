@@ -1,9 +1,9 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
-const axios = require('axios');
+const { GoogleGenAI } = require('@google/generative-ai');
 
 // 1. Keep-Alive Web Server Setup
-const app = express();
+const app = reportApp || express();
 app.get('/', (req, res) => res.send('🎒 Doraemon is awake and eating Dorayaki! 🥞'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
 
@@ -11,7 +11,10 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. Discord Client Initialization
+// 3. Google Gen AI Studio Initialization (Using placeholder token fallback)
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "YOUR_GEMINI_API_KEY_HERE" });
+
+// 4. Discord Client Initialization
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -135,40 +138,27 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature ---
+    // --- FEATURE: AI Chatbot Feature (Google AI Studio Setup) ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            const aiResponse = await axios.post('https://groq.com', {
-                model: "llama-3.1-8b-instant", // Updated model name for faster processing
-                messages: [
-                    {
-                        role: "system",
-                        content: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Use emojis like 🎒, 🤖, 🥞, and 🚪. Keep your answers brief, punchy, conversational, and accessible. Never break character."
-                    },
-                    { role: "user", content: userPrompt }
-                ]
-            }, {
-                headers: {
-                    'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
-                    'Content-Type': 'application/json'
+            // Setup the model configuration pointing directly to the upgraded 3.8 Flash model
+            const model = ai.models.get({
+                model: 'gemini-3.8-flash',
+                config: {
+                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Use emojis like 🎒, 🤖, 🥞, and 🚪. Keep your answers brief, punchy, conversational, and accessible. Never break character."
                 }
             });
 
-            // Added choice index array path extraction fix
-            const replyMessage = aiResponse.data.choices[0].message.content;
-            return message.reply(replyMessage);
+            const result = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }]
+            });
+
+            return message.reply(result.text);
         } catch (error) {
-            // Enhanced descriptive logging tracking setup
-            if (error.response) {
-                console.error("GROQ API CRASH DETAILS:", JSON.stringify(error.response.data));
-            } else if (error.request) {
-                console.error("GROQ NETWORK TIMEOUT: Outgoing connection block or timeout from host server stack.");
-            } else {
-                console.error("SCRIPT EXECUTION ERROR:", error.message);
-            }
+            console.error("GEMINI API CRASH DETAILS:", error.message);
             return message.reply('🤖 *Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
         }
     }
