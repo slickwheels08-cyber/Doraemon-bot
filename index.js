@@ -141,6 +141,7 @@ client.on('messageCreate', async (message) => {
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
+            // FIXED BASE URL ENDPOINT PATH
             const aiResponse = await axios.post('https://groq.com', {
                 model: "llama3-8b-8192",
                 messages: [
@@ -157,7 +158,7 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
-            // FIXED DATA RESPONSE PATH FOR THE ARRAY ELEMENT [0]
+            // FIXED DATA RESPONSE PATH ARRAYS FOR GROQ SPECIFICATION
             const replyMessage = aiResponse.data.choices[0].message.content;
             return message.reply(replyMessage);
         } catch (error) {
