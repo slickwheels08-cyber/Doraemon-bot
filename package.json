@@ -1,7 +1,7 @@
 {
   "name": "doraemon-bot",
   "version": "1.0.0",
-  "description": "24/7 Doraemon Discord Bot powered by Gemini 3.8 Flash",
+  "description": "24/7 Doraemon Discord Bot using modern GenAI SDK",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -9,6 +9,6 @@
   "dependencies": {
     "discord.js": "^14.14.1",
     "express": "^4.18.2",
-    "@google/generative-ai": "^0.1.1"
+    "@google/genai": "^2.24.0"
   }
 }
