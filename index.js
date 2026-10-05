@@ -4,7 +4,7 @@ const { GoogleGenAI } = require('@google/genai');
 
 // 1. Keep-Alive Web Server Setup
 const app = express();
-app.get('/', (req, res) => res.send('🎒 Doraemon is awake and eating Dorayaki! 🥞'));
+app.get('/', (req, res) => res.send('Doraemon is awake and eating Dorayaki!'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
 
 // 2. In-Memory Database and Tracking Maps
@@ -25,7 +25,7 @@ const client = new Client({
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
-    client.user.setActivity('with Nobita 😭', { type: 3 }); // Listening status
+    client.user.setActivity('with Nobita', { type: 3 }); // Listening status
 });
 
 client.on('messageCreate', async (message) => {
@@ -37,20 +37,20 @@ client.on('messageCreate', async (message) => {
     // --- COMMAND: !dorahelp ---
     if (message.content === '!dorahelp') {
         const helpEmbed = new EmbedBuilder()
-            .setTitle('🤖 Doraemon\'s 4D Pocket Help Menu! 🎒')
+            .setTitle('Doraemon\'s 4D Pocket Help Menu!')
             .setColor('#0099FF')
             .setDescription(`Hi ${username}! I've traveled from the 22nd century to help you out! Here is what you can do:\n\n` +
-                `✨ **Interactive Fun**\n` +
+                `Interactive Fun\n` +
                 `• \`!gadget\` — Reach into my 4D pocket for a tool.\n` +
                 `• \`!anywheredoor\` — Step through the magic door.\n` +
                 `• \`!changelight\` — Grow tall or shrink down.\n` +
                 `• \`!nobita\` — See what trouble Nobita is in.\n` +
-                `• \`!mouse\` — *WARNING:* Do not use this command. 🐭\n\n` +
-                `🥞 **Dorayaki Economy**\n` +
-                `• \`!dorayaki\` — Feed me a snack to earn points! *(15s Cooldown)*\n` +
+                `• \`!mouse\` — WARNING: Do not use this command.\n\n` +
+                `Dorayaki Economy\n` +
+                `• \`!dorayaki\` — Feed me a snack to earn points! (15s Cooldown)\n` +
                 `• \`!dorayaki-board\` — View the global high-score leaderboard.\n\n` +
-                `💬 **Chat With Me**\n` +
-                `• Simply **mention/tag** me in a message like \`@Doraemon\` to start a conversation!`);
+                `Chat With Me\n` +
+                `• Simply mention/tag me in a message like \`@Doraemon\` to start a conversation!`);
         return message.reply({ embeds: [helpEmbed] });
     }
 
@@ -67,7 +67,7 @@ client.on('messageCreate', async (message) => {
             'Jump into Nobita\'s desk drawer and travel through time!'
         ];
         const randomIdx = Math.floor(Math.random() * gadgets.length);
-        return message.reply(`*Doraemon reaches deep into his 4D pocket...* 🤖🎒\nHe pulls out the **${gadgets[randomIdx]}**\n\n✨ *Effect:* ${effects[randomIdx]}`);
+        return message.reply(`*Doraemon reaches deep into his 4D pocket...*\nHe pulls out the **${gadgets[randomIdx]}**\n\nEffect: ${effects[randomIdx]}`);
     }
 
     // --- COMMAND: !anywheredoor ---
@@ -81,16 +81,16 @@ client.on('messageCreate', async (message) => {
             'the roof of the school because you\'re late for class!'
         ];
         const randomLoc = locations[Math.floor(Math.random() * locations.length)];
-        return message.reply(` 🚪✨ **${username} opens the Anywhere Door and steps through...**\n...and instantly ends up in: **${randomLoc}**`);
+        return message.reply(`**${username} opens the Anywhere Door and steps through...**\n...and instantly ends up in: **${randomLoc}**`);
     }
 
     // --- COMMAND: !changelight ---
     if (message.content === '!changelight') {
         const lights = [
-            `🔴 **SMALL LIGHT!** *ZAP!* ${username} shrinks down to the size of a tiny ant! Watch out for shoes!`,
-            `🔵 **BIG LIGHT!** *ZAP!* ${username} grows into a 50-foot giant! You're now taller than the school building!`
+            `SMALL LIGHT! *ZAP!* ${username} shrinks down to the size of a tiny ant! Watch out for shoes!`,
+            `BIG LIGHT! *ZAP!* ${username} grows into a 50-foot giant! You're now taller than the school building!`
         ];
-        return message.reply(`🔦✨ **Doraemon pulls out a flashlight and clicks the switch...**\n\n${lights[Math.floor(Math.random() * lights.length)]}`);
+        return message.reply(`*Doraemon pulls out a flashlight and clicks the switch...*\n\n${lights[Math.floor(Math.random() * lights.length)]}`);
     }
 
     // --- COMMAND: !nobita ---
@@ -102,25 +102,25 @@ client.on('messageCreate', async (message) => {
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
-        return message.reply(`👓🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
+        return message.reply(`*Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!"`);
     }
 
     // --- COMMAND: !mouse ---
     if (message.content === '!mouse') {
-        return message.reply(`🐭⚠️ **AAAGHH!!! A MOUSE!!!** ⚠️🐭\n\n*Doraemon completely loses his mind, screams at the top of his lungs, and pulls out his most dangerous weapon:*\n"Get it away from me!!! **JUMPING OVEN CANNON ACTIVATED!!!** 💣💥"\n*(The server shakes as Doraemon accidentally blows up a 5-mile radius trying to hit a tiny mouse.)*`);
+        return message.reply(`WARNING: A MOUSE!!!\n\n*Doraemon completely loses his mind, screams at the top of his lungs, and pulls out his most dangerous weapon:*\n"Get it away from me!!! JUMPING OVEN CANNON ACTIVATED!!!"\n*(The server shakes as Doraemon accidentally blows up a 5-mile radius trying to hit a tiny mouse.)*`);
     }
 
     // --- COMMAND: !dorayaki (With 15s Cooldown) ---
     if (message.content === '!dorayaki') {
         if (cooldowns.has(userId)) {
-            return message.reply('🥞 *Doraemon is still chewing!* "Hold on! I can\'t eat that fast! Wait a moment before feeding me again!"');
+            return message.reply('*Doraemon is still chewing!* "Hold on! I can\'t eat that fast! Wait a moment before feeding me again!"');
         }
 
         dorayakiDb[userId] = (dorayakiDb[userId] || 0) + 1;
         cooldowns.add(userId);
         setTimeout(() => cooldowns.delete(userId), 15000); 
 
-        return message.reply(`🥞💙 **${username} hands Doraemon a fresh Dorayaki!** \n"Mmmm, yummy! That makes **${dorayakiDb[userId]}** total you've given me! Thank you!" 🥰`);
+        return message.reply(`**${username} hands Doraemon a fresh Dorayaki!** \n"Mmmm, yummy! That makes **${dorayakiDb[userId]}** total you've given me! Thank you!"`);
     }
 
     // --- COMMAND: !dorayaki-board ---
@@ -129,35 +129,38 @@ client.on('messageCreate', async (message) => {
             .sort((a, b) => b - a)
             .slice(0, 10);
 
-        let boardText = sorted.map(([id, val], i) => `${i + 1}. <@${id}> — ${val} 🥞`).join('\n') || "No one has fed me yet! 🥞";
+        let boardText = sorted.map(([id, val], i) => `${i + 1}. <@${id}> — ${val} snacks`).join('\n') || "No one has fed me yet!";
 
         const boardEmbed = new EmbedBuilder()
-            .setTitle('🏆 Global Dorayaki Leaderboard! 🥞')
+            .setTitle('Global Dorayaki Leaderboard!')
             .setColor('#0099FF')
             .setDescription(boardText);
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature (New SDK Syntax) ---
+    // --- FEATURE: AI Chatbot Feature (Correct @google/genai Formatting) ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
-        if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
+        if (!userPrompt) return message.reply("*Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-                        // Updated model configuration pathing structure for the generative-ai client
+            // FIXED METHOD INVOCATION INTERACTION DIRECTLY FOR THE CLIENT INSTANCE
             const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-3.8-flash',
                 contents: userPrompt,
                 config: {
-                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use any emojis, symbols, or special characters in your output text. Keep your answers brief, punchy, conversational, and accessible. Never break character."
+                    systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried, and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Do not use emojis under any circumstances. Keep your answers brief, punchy, conversational, and accessible. Never break character."
                 }
             });
 
-
-            return message.reply(response.text);
+            if (response && response.text) {
+                return message.reply(response.text);
+            } else {
+                throw new Error("Invalid text output block encountered from client context handler.");
+            }
         } catch (error) {
-            console.error("GEMINI API ERROR:", error.message);
-            return message.reply('🤖 *Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
+            console.error("GEMINI API ERROR DETAILS:", error.message);
+            return message.reply('*Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
         }
     }
 });
