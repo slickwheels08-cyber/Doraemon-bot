@@ -1,6 +1,6 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
-const { GoogleGenAI } = require('@google/genai');
+const GoogleGenAI = require('@google/genai');
 
 // 1. Keep-Alive Web Server Setup
 const app = express();
