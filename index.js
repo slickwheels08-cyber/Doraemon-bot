@@ -137,9 +137,7 @@ client.on('messageCreate', async (message) => {
 
     // --- FEATURE: AI Chatbot Feature ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
-        console.log("Chatbot mention detected from user:", username);
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
-        
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
@@ -159,6 +157,7 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
+            // ADD THE MISSING [0] INDEX TRACKER TO RESOLVE THE ARRAY BLOCK
             const replyMessage = aiResponse.data.choices[0].message.content;
             return message.reply(replyMessage);
         } catch (error) {
