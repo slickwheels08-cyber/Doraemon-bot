@@ -99,7 +99,7 @@ client.on('messageCreate', async (message) => {
             'I overslept and Mr. Eiichiro caught me being late!'
         ];
         const randomTrouble = troubles[Math.floor(Math.random() * troubles.length)];
-        return message.reply(`眼镜🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
+        return message.reply(`👓🎒 *Nobita runs into the server crying...*\n"Doraemaaaan! ${randomTrouble} Please lend me a gadget!" 😭`);
     }
 
     // --- COMMAND: !mouse ---
@@ -141,8 +141,7 @@ client.on('messageCreate', async (message) => {
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // FIXED BASE URL ENDPOINT PATH
-            const aiResponse = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+            const aiResponse = await axios.post('https://groq.com', {
                 model: "llama3-8b-8192",
                 messages: [
                     {
@@ -158,6 +157,7 @@ client.on('messageCreate', async (message) => {
                 }
             });
 
+            // FIXED DATA RESPONSE PATH FOR THE ARRAY ELEMENT [0]
             const replyMessage = aiResponse.data.choices[0].message.content;
             return message.reply(replyMessage);
         } catch (error) {
