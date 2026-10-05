@@ -1,9 +1,9 @@
 const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
 const express = require('express');
-const { GoogleGenAI } = require('@google/generative-ai');
+const { GoogleGenAI } = require('@google/genai');
 
 // 1. Keep-Alive Web Server Setup
-const app = reportApp || express();
+const app = express();
 app.get('/', (req, res) => res.send('🎒 Doraemon is awake and eating Dorayaki! 🥞'));
 app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is online.'));
 
@@ -11,8 +11,8 @@ app.listen(process.env.PORT || 3000, () => console.log('Keep-Alive server is onl
 const dorayakiDb = {}; 
 const cooldowns = new Set();
 
-// 3. Google Gen AI Studio Initialization (Using placeholder token fallback)
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "YOUR_GEMINI_API_KEY_HERE" });
+// 3. New Unified Google Gen AI Client Setup
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 // 4. Discord Client Initialization
 const client = new Client({
@@ -138,27 +138,24 @@ client.on('messageCreate', async (message) => {
         return message.reply({ embeds: [boardEmbed] });
     }
 
-    // --- FEATURE: AI Chatbot Feature (Google AI Studio Setup) ---
+    // --- FEATURE: AI Chatbot Feature (New SDK Syntax) ---
     if (message.mentions.has(client.user) && !message.mentions.everyone) {
         let userPrompt = message.content.replace(/<@!?\d+>/g, '').trim();
         if (!userPrompt) return message.reply("🎒 *Doraemon tilts his head:* \"Did you want to ask me something, friend?\"");
 
         try {
-            // Setup the model configuration pointing directly to the upgraded 3.8 Flash model
-            const model = ai.models.get({
+            // New standardized content generation method from @google/genai SDK
+            const response = await ai.models.generateContent({
                 model: 'gemini-3.8-flash',
+                contents: userPrompt,
                 config: {
                     systemInstruction: "You are Doraemon, the iconic blue robotic cat from the 22nd century. Speak with a friendly, helpful, slightly worried and anxious tone, just like in the anime. You love Dorayaki, intensely fear mice, and constantly worry about your best friend Nobita getting into trouble or failing his exams. Use emojis like 🎒, 🤖, 🥞, and 🚪. Keep your answers brief, punchy, conversational, and accessible. Never break character."
                 }
             });
 
-            const result = await model.generateContent({
-                contents: [{ role: 'user', parts: [{ text: userPrompt }] }]
-            });
-
-            return message.reply(result.text);
+            return message.reply(response.text);
         } catch (error) {
-            console.error("GEMINI API CRASH DETAILS:", error.message);
+            console.error("GEMINI API ERROR:", error.message);
             return message.reply('🤖 *Doraemon scratches his head...* "My 4D pocket is jammed! Can you try talking to me again in a moment?"');
         }
     }
